@@ -1,4 +1,4 @@
-﻿provenance,,burial_id,element,component,c_ap,c_col,n_air,o_ap,reference,doi
+﻿provenance,compound,burial_id,element,component,c_ap,c_col,n_air,o_ap,reference,doi
 Conjunto Noroeste,,7,l. rib,bone bioapatite,-3.00,,,-8.10,Nado (2017),https://keep.lib.asu.edu/items/155542
 Conjunto Noroeste,,13,r. rib,bone bioapatite,-5.00,,,-8.10,Nado (2017),https://keep.lib.asu.edu/items/155542
 Conjunto Noroeste,,14,l. rib,bone bioapatite,-3.00,,,-8.10,Nado (2017),https://keep.lib.asu.edu/items/155542
@@ -434,5 +434,232 @@ Teopancazco,,3,M,enamel bioapatite,,,,-6.40,Casar et al. (2017),https://doi.org/
 Teopancazco,,4,M,enamel bioapatite,,,,-6.80,Casar et al. (2017),https://doi.org/10.1007/s12520-016-0422-0
 Teopancazco,,13A,M,enamel bioapatite,,,,-4.20,Casar et al. (2017),https://doi.org/10.1007/s12520-016-0422-0
 ,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
+Copan,,F5284,LRM1,enamel bioapatite,-3.90,,,-1.66,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5285,URM1,enamel bioapatite,-2.23,,,-4.50,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5286,URM1,enamel bioapatite,-4.96,,,-3.65,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5287,LRM1,enamel bioapatite,-4.37,,,-1.16,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5288,ULM1,enamel bioapatite,-2.84,,,-4.20,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5307,URM1,enamel bioapatite,-3.59,,,-2.88,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5308,URM1,enamel bioapatite,-4.01,,,-1.79,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5309,URM1,enamel bioapatite,-2.83,,,-4.50,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5310,LRM2,enamel bioapatite,-6.25,,,-1.30,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5311,URM1,enamel bioapatite,-5.54,,,-0.88,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5312,ULM1,enamel bioapatite,-2.42,,,-4.52,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5313,LLM1,enamel bioapatite,-3.27,,,-4.39,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5289,LRM1,enamel bioapatite,-4.09,,,-1.06,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5314,LRM2 (dec.),enamel bioapatite,-2.69,,,-4.52,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5290,ULM1 (dec.),enamel bioapatite,-3.54,,,-4.28,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5315,LRM2 (dec.),enamel bioapatite,-2.93,,,-4.17,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5291,URM2,enamel bioapatite,-4.27,,,-4.59,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5292,URM1,enamel bioapatite,-3.50,,,-3.72,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5293,URM1,enamel bioapatite,-2.07,,,-4.95,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5294,LRM1,enamel bioapatite,-2.72,,,-4.66,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5295,URM1 (dec.),enamel bioapatite,-1.43,,,-4.30,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5296,LLM1,enamel bioapatite,-2.29,,,-2.43,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5297,URM1,enamel bioapatite,-3.13,,,-4.51,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5298,ULM1,enamel bioapatite,-5.65,,,-0.21,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5299,ULM1,enamel bioapatite,-2.50,,,-2.94,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5300,LRM (dec.),enamel bioapatite,-3.13,,,-4.37,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5301,URM1,enamel bioapatite,-2.25,,,-4.26,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5302,LLM2 (dec.),enamel bioapatite,-1.66,,,-4.37,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5303,LLM1,enamel bioapatite,-3.91,,,-4.38,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5304,LLM1,enamel bioapatite,-0.89,,,-4.39,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,F5305,LLM1,enamel bioapatite,-3.81,,,-2.72,Price et al. 2014,https://doi.org/10.1016/j.jaa.2014.02.003
+Copan,,,"I2, mand",enamel bioapatite,-2.90,,,-0.27,Wright 2013,
+Copan,,,"M3, max L",enamel bioapatite,-4.95,,,-1.63,Wright 2013,
+Copan,,,"M1, mand R",enamel bioapatite,-0.51,,,-3.19,Wright 2013,
+Copan,,,"M1, mand R",enamel bioapatite,-0.25,,,-3.25,Wright 2013,
+Copan,,,"M1, mand R",enamel bioapatite,-0.21,,,-3.70,Wright 2013,
+Copan,,,"M3, mand R",enamel bioapatite,-0.88,,,-3.99,Wright 2013,
+Copan,,,"I2, mand",enamel bioapatite,-3.59,,,-2.97,Wright 2013,
+Copan,,,"I2, mand",enamel bioapatite,-3.77,,,-2.81,Wright 2013,
+Copan,,,"P3, mand L",enamel bioapatite,-1.86,,,-4.52,Wright 2013,
+Copan,,,"M3, mand R",enamel bioapatite,-2.99,,,-5.01,Wright 2013,
+Copan,,,"M1, mand L",enamel bioapatite,-5.45,,,-2.28,Wright 2013,
+Copan,,,"M1, mand L",enamel bioapatite,-5.21,,,-2.21,Wright 2013,
+Copan,,,"M1, mand L",enamel bioapatite,-5.90,,,-2.29,Wright 2013,
+Copan,,,"M3, mand L",enamel bioapatite,-4.09,,,-2.66,Wright 2013,
+Copan,,,,enamel bioapatite,-5.80,,,-3.80,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.70,,,-4.40,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.00,,,-4.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.30,,,-5.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-6.50,,,-2.00,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.60,,,-4.50,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.20,,,-3.50,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-5.30,,,-2.90,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-8.60,,,-2.30,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-8.10,,,-0.10,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.40,,,-4.40,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.50,,,-4.30,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-5.80,,,-2.80,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.60,,,-1.70,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-7.50,,,-1.80,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-4.10,,,-3.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.10,,,-5.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.80,,,-3.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-5.90,,,-0.30,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.60,,,-4.40,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.90,,,-5.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.60,,,-5.00,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.60,,,-3.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.20,,,-5.40,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.80,,,-1.80,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,,,,,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-6.80,,,-2.40,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-4.60,,,-3.30,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-7.80,,,2.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.80,,,-4.40,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.10,,,-5.90,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.80,,,-4.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-1.70,,,-5.90,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.20,,,-4.10,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.60,,,-4.70,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.90,,,-3.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.70,,,-4.00,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.90,,,-3.50,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.40,,,-3.50,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.40,,,-4.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-8.00,,,-0.90,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-6.90,,,-1.10,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.10,,,-4.00,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.30,,,-2.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-6.30,,,-2.10,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-0.70,,,-5.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.90,,,-2.70,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.60,,,-3.10,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,,,,,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-1.60,,,-4.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-6.80,,,-0.30,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-6.70,,,-2.90,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-1.30,,,-4.70,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-1.20,,,-2.30,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.60,,,-4.50,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-4.40,,,-1.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-4.30,,,-4.50,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.80,,,-2.70,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-4.10,,,-4.50,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-3.40,,,-4.10,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-7.40,,,-1.70,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-2.20,,,-5.60,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-5.00,,,-1.70,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-4.50,,,-3.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,,enamel bioapatite,-1.70,,,-4.20,Suzuki et al. 2020,https://doi.org/10.1016/j.jaa.2020.101228
+Copan,,,"I2, mand L",enamel bioapatite,-4.50,,,-3.17,Wright 2013,
+Copan,,,"M1, mand L",enamel bioapatite,-4.56,,,-4.10,Wright 2013,
+Copan,,,"M1, mand L",enamel bioapatite,-4.40,,,-3.39,Wright 2013,
+Copan,,,"M1, mand L",enamel bioapatite,-4.65,,,-3.36,Wright 2013,
+Copan,,,"M3, max R",enamel bioapatite,-2.53,,,-4.02,Wright 2013,
+Copan,,,"I2, mand",enamel bioapatite,-3.69,,,-4.38,Wright 2013,
+Copan,,,"I2, mand",enamel bioapatite,-3.01,,,-4.52,Wright 2013,
+Copan,,,"I2, mand",enamel bioapatite,-2.40,,,-4.86,Wright 2013,
+Copan,,,"M3, max",enamel bioapatite,-2.14,,,-4.96,Wright 2013,
+Copan,,,"I2, max",enamel bioapatite,-4.47,,,-1.38,Wright 2013,
+Copan,,,"I2, max",enamel bioapatite,-4.23,,,-1.66,Wright 2013,
+Copan,,,"M3, mand",enamel bioapatite,-3.27,,,-3.44,Wright 2013,
+Copan,,,"M3, max",enamel bioapatite,-4.63,,,-4.35,Wright 2013,
+Copan,,,"I1, max R",enamel bioapatite,-3.26,,,-5.03,Wright 2013,
+Copan,,,"I1, max R",enamel bioapatite,-3.04,,,-5.05,Wright 2013,
+Copan,,,"M1, mand R",enamel bioapatite,-3.46,,,-5.15,Wright 2013,
+Copan,,,"M1, mand R",enamel bioapatite,-3.09,,,-5.56,Wright 2013,
+Copan,,,"M3, mand L",enamel bioapatite,-2.99,,,-5.77,Wright 2013,
+Copan,,,"I1, max R",enamel bioapatite,-4.93,,,-1.10,Wright 2013,
+Copan,,,"I1, max R",enamel bioapatite,-5.94,,,-0.99,Wright 2013,
+Copan,,,"I1, max R",enamel bioapatite,-6.20,,,-0.88,Wright 2013,
+Copan,,,"I1, max R",enamel bioapatite,-4.96,,,-0.25,Wright 2013,
+Copan,,,"M1, max R",enamel bioapatite,-5.23,,,-1.16,Wright 2013,
+Copan,,,"M1, max R",enamel bioapatite,-5.54,,,-1.16,Wright 2013,
+Copan,,,"M1, max R",enamel bioapatite,-5.73,,,-0.76,Wright 2013,
+Copan,,,"M3, mand L",enamel bioapatite,-3.30,,,-5.96,Wright 2013,
+Kaminaljuyu,,KJ1,Mand M1,enamel bioapatite,-0.79,,,-5.24,Wright and Schwarcz 1998,https://doi.org/10.1002/(SICI)1096-8644(199805)106:1<1::AID-AJPA1>3.0.CO;2-W
+Kaminaljuyu,,KJ1,Mand P4,enamel bioapatite,-0.58,,,-5.20,Wright and Schwarcz 1998,https://doi.org/10.1002/(SICI)1096-8644(199805)106:1<1::AID-AJPA1>3.0.CO;2-W
+Kaminaljuyu,,KJ1,Max M3,enamel bioapatite,-1.56,,,-5.86,Wright and Schwarcz 1998,https://doi.org/10.1002/(SICI)1096-8644(199805)106:1<1::AID-AJPA1>3.0.CO;2-W
+Kaminaljuyu,,KJ46,Mand P3,enamel bioapatite,-3.19,,,-2.02,Wright and Schwarcz 1998,https://doi.org/10.1002/(SICI)1096-8644(199805)106:1<1::AID-AJPA1>3.0.CO;2-W
+Kaminaljuyu,,KJ45,max M3,enamel bioapatite,-3.89,,,-4.98,Wright and Schwarcz 1999,https://doi.org/10.1006/jasc.1998.0351
+Kaminaljuyu,,KJ20-3,Max P3,enamel bioapatite,-3.40,,,-4.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ20-4,Man M3,enamel bioapatite,-1.80,,,-5.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ40-2,Man M1,enamel bioapatite,-2.60,,,-4.70,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ40-3,Max P4,enamel bioapatite,-1.80,,,-5.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ11-2,Max M1,enamel bioapatite,-1.80,,,-5.20,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ11-3,max P4,enamel bioapatite,-1.70,,,-5.10,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ11-4,Max M3,enamel bioapatite,-1.00,,,-5.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ25-2,Man M1,enamel bioapatite,-4.47,,,-4.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ25-3,Man P3,enamel bioapatite,-3.42,,,-5.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ25-4,Max M3,enamel bioapatite,-4.00,,,-5.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ10-2,Max M1,enamel bioapatite,-3.50,,,-4.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ10-3,Max P4,enamel bioapatite,-2.90,,,-4.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ10-4,Max M3,enamel bioapatite,-1.90,,,-5.90,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ36-2,Man M1,enamel bioapatite,-1.09,,,-5.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ36-3,Man P4,enamel bioapatite,-0.78,,,-5.60,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ36-4,Man M3,enamel bioapatite,-0.43,,,-6.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ22-2,Man M1,enamel bioapatite,-1.40,,,-4.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ35-2,Man M1,enamel bioapatite,-2.23,,,-4.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ35-3,Man P4,enamel bioapatite,-3.07,,,-4.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ35-4,Man M3,enamel bioapatite,-3.30,,,-4.90,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ15-2,Max M1,enamel bioapatite,-3.40,,,-4.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ15-3,Max P3,enamel bioapatite,-3.60,,,-4.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ16-2,Max M1,enamel bioapatite,-3.60,,,-4.60,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ16-3,Max P3,enamel bioapatite,-2.50,,,-5.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ16-4,Max M3,enamel bioapatite,-2.60,,,-5.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ30-2,Man M1,enamel bioapatite,-1.00,,,-4.60,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ31-3,Man P3,enamel bioapatite,-2.40,,,-5.20,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ31-4,Man M3,enamel bioapatite,-2.50,,,-5.70,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ32-2,Man M1,enamel bioapatite,-2.29,,,-5.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ32-3,Max P3,enamel bioapatite,-2.75,,,-4.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ32-4,Max M3,enamel bioapatite,-2.34,,,-5.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ18-4,Man M3,enamel bioapatite,-3.00,,,-5.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ19-2,Max M1,enamel bioapatite,-4.38,,,-4.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ19-3,Max P3,enamel bioapatite,-3.55,,,-5.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ28-2,Man M1,enamel bioapatite,-4.40,,,-4.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ1-2,Man M1,enamel bioapatite,-0.80,,,-5.20,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ1-3,Man P4,enamel bioapatite,-0.60,,,-5.20,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ1-4,Max M3,enamel bioapatite,-1.60,,,-5.90,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ24-3,Man P4,enamel bioapatite,-4.30,,,-6.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ24-4,Man M3,enamel bioapatite,-4.20,,,-6.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ21-2,Man M1,enamel bioapatite,-4.30,,,-4.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ33-2,Max M1,enamel bioapatite,-4.60,,,-4.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ33-3,Max P3,enamel bioapatite,-2.50,,,-5.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ33-4,Man M3,enamel bioapatite,-1.60,,,-5.90,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ34-2,Man M1,enamel bioapatite,-3.90,,,-3.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ34-3,Man P4,enamel bioapatite,-2.20,,,-3.70,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ34-4,Man M3,enamel bioapatite,-2.20,,,-5.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ46-2,Man M1,enamel bioapatite,-3.30,,,-4.20,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ46-3,Man P3,enamel bioapatite,-3.30,,,-4.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ46-4,Max M3,enamel bioapatite,-3.90,,,-5.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ47-2,Man M1,enamel bioapatite,-3.40,,,-3.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ47-3,Man P3,enamel bioapatite,-1.90,,,-4.50,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ47-4,Man M3,enamel bioapatite,-1.60,,,-4.20,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ45-2,Max M1,enamel bioapatite,-4.40,,,-1.70,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ45-3,Man P3,enamel bioapatite,-3.20,,,-2.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ45-4,Max M3,enamel bioapatite,-3.80,,,-1.80,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ50-2,Man M1,enamel bioapatite,-2.10,,,-5.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ50-3,Man P4,enamel bioapatite,-1.60,,,-5.20,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ50-4,Max M3,enamel bioapatite,-1.60,,,-5.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ48-3,Man P3,enamel bioapatite,-2.80,,,-4.40,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ48-4,Man M3,enamel bioapatite,-2.30,,,-4.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ51-2,Man M1,enamel bioapatite,-4.10,,,-4.90,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ51-3,Max P3,enamel bioapatite,-3.50,,,-5.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ49-2,Man M1,enamel bioapatite,-6.50,,,-3.10,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ49-3,Max P3,enamel bioapatite,-6.40,,,-3.30,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ49-4,Man M3,enamel bioapatite,-0.40,,,-4.90,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ44-2,Max M1,enamel bioapatite,-4.10,,,-2.90,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ44-3,Max P4,enamel bioapatite,-3.90,,,-3.10,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ9-3,Man P4,enamel bioapatite,-2.10,,,-5.10,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,KJ9-4,Man M3,enamel bioapatite,-2.40,,,-5.00,Wright et al. 2010,https://doi.org/10.1016/j.jaa.2010.01.002
+Kaminaljuyu,,,man M1,enamel bioapatite,-4.34,,,-4.41,White et al. 2000,https://doi.org/10.1086/jar.56.4.3630930
+Kaminaljuyu,,KJ53,man M3,enamel bioapatite,-2.36,,,-4.61,Wright and Schwarcz 1999,https://doi.org/10.1006/jasc.1998.0351
+Kaminaljuyu,,KJ55,man M1,enamel bioapatite,-6.85,,,-2.36,Wright and Schwarcz 1999,https://doi.org/10.1006/jasc.1998.0351
+Monte Alban,,1982,fibula,bone collagen,,-8.50,9.30,,Blitz 1995,
+Monte Alban,,1904,femur,bone collagen,,-8.70,10.30,,Blitz 1995,
+Monte Alban,,1899,femur,bone collagen,,-7.90,9.80,,Blitz 1995,
+Monte Alban,,1868,femur,bone collagen,,-8.30,8.90,,Blitz 1995,
+Monte Alban,,1908,femur,bone collagen,,-9.10,10.50,,Blitz 1995,
+Monte Alban,,1922,tibia,bone collagen,,-7.30,9.90,,Blitz 1995,
+Monte Alban,,1901,femur,bone collagen,,-11.30,12.20,,Blitz 1995,
+Monte Alban,,1849,humerus,bone collagen,,-7.60,9.10,,Blitz 1995,
+Monte Alban,,2097,humerus,bone collagen,,-8.60,12.40,,Blitz 1995,
+Monte Alban,,1996,tibia,bone collagen,,-8.60,9.40,,Blitz 1995,
+Monte Alban,,2029,tibia,bone collagen,,-8.20,9.60,,Blitz 1995,
+Monte Alban,,2082,femur,bone collagen,,-8.10,10.50,,Blitz 1995,
+Monte Alban,,2035,femur,bone collagen,,-8.40,9.00,,Blitz 1995,
+Monte Alban,,2107,humerus,bone collagen,,-8.10,9.20,,Blitz 1995,
+Monte Alban,,2132,femur,bone collagen,,-7.70,9.10,,Blitz 1995,
