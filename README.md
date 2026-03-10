@@ -11,7 +11,7 @@ Stable isotope dataset for individuals from La Ventilla.
 Teo_neighborhood_isotope_data.csv  
 Published isotopic data from other Teotihuacan residential compounds.
 
-LV_Bayesian_stats_updated.Rmd  
+LV_Bayesian_stats.Rmd  
 RMarkdown script implementing Bayesian models used to evaluate
 dietary variation by compound, sex, locality, and time period.
 
