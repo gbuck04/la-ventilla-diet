@@ -1,0 +1,1657 @@
+---
+title: "Bayesian Analysis of Stable Isotope Variation at La Ventilla, Teotihuacan"
+author: "Gina M. Buckley"
+date: "2026-03-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+# Introduction
+
+This document provides a reproducible workflow describing the Bayesian statistical analyses used to evaluate stable isotope variation for paleodietary reconstruction at the La Ventilla district of Teotihuacan. The code implements Bayesian models to estimate differences in isotopic values across social, biological, and temporal groups within the skeletal assemblage.
+
+To replicate the analyses presented here, users must first install the R package **brms**, which provides an interface to the Stan probabilistic programming language for Bayesian inference.
+
+### Load required packages
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(brms)
+library(tidybayes)
+library(broom.mixed)
+library(writexl)
+library(bayesplot)
+library(ggridges)
+library(posterior)
+library(patchwork)
+
+set.seed(123)
+```
+
+### Load isotopic dataset
+Stable isotope data from individuals recovered at the Compound of the Glyphs (LV2) and the Compound of the Artisans (LV3) were loaded into R for analysis.
+
+```{r}
+df_ventilla_isotopes <- read_csv("https://raw.githubusercontent.com/gbuck04/la-ventilla-diet/refs/heads/main/LV_data.csv")
+df_teo_compounds <- read_csv("https://raw.githubusercontent.com/gbuck04/la-ventilla-diet/refs/heads/main/Teo_neighborhood_isotope_data.csv")
+```
+
+The dataset contains two extreme δ¹³C_collagen values (−20.3‰ in LV2 and −18.1‰ in LV3). Rather than removing these observations, they were retained in the analysis. Bayesian models estimate parameters through posterior distributions, which incorporate uncertainty directly and are generally less sensitive to deviations from normality and the influence of individual observations compared with traditional NHST approaches. Retaining these values therefore allows the full observed variation in the dataset to be represented in the model.
+
+
+### Data cleaning and preparation
+
+The dataset was screened for preservation quality prior to analysis. Samples with carbon-to-phosphorus (C:I) ratios outside the accepted range for well-preserved bioapatite were excluded from apatite-based isotopic analyses. Specifically, δ¹³C_apatite and δ¹⁸O_apatite values were set to missing (NA) when the C:I ratio fell outside the commonly accepted range of 2.8–4.0, indicating potentially altered or poorly preserved apatite.
+
+```{r}
+df_clean_isotopes <- df_ventilla_isotopes %>%
+mutate(
+  c_ap = ifelse(CI < 2.8 | CI > 4.0, NA, c_ap),
+  o_ap = ifelse(CI < 2.8 | CI > 4.0, NA, o_ap)
+)
+```
+
+
+### Filter published isotopic data to generate priors
+
+To parameterize informative priors for the Bayesian models, summary statistics were calculated from previously published stable isotope data from Teotihuacan residential compounds. Published values for δ¹³C (collagen), δ¹⁵N (collagen), δ¹³C (apatite), and δ¹⁸O (apatite) were compiled into a reference dataset of isotopic measurements from multiple compounds within the city.
+
+Samples originating from La Ventilla, Frente 2 and Frente 3 were excluded from this dataset to ensure that the priors were derived from independent data. In addition, samples from outside of Teotihuacan were removed. Because the new data presented in this study derive from bone collagen and bone bioapatite, measurements from other components (e.g., enamel bioapatite) were also excluded. The resulting dataset therefore represents isotopic variation from previously published Teotihuacan skeletal samples that are comparable to the materials analyzed in this study.
+
+
+```{r}
+df_teo_filtered <- df_teo_compounds %>%
+  filter(
+    !provenance %in% c("La Ventilla, Frente 2", "La Ventilla, Frente 3", "Copan", "Kaminaljuyu", "Monte Alban", "Copan Valley"),
+    component != "enamel bioapatite"
+  )
+```
+
+### Generate priors from published data
+
+Previous NHST results indicate that mean isotopic values do not differ significantly among residential compounds within Teotihuacan. Informative priors were used to stabilize parameter estimation given modest sample sizes while incorporating well-established isotopic baselines for Teotihuacan populations. Therefore, the filtered dataset was combined to calculate overall summary statistics for δ¹³C collagen, δ¹⁵N collagen, δ¹³C apatite, and δ¹⁸O apatite. The mean and standard deviation of each isotopic system were used to parameterize normal prior distributions for the intercept terms in the Bayesian models.
+
+
+```{r}
+generate_prior <- function(data, variable, class = "Intercept") {
+  stats <- data %>%
+    filter(!is.na(.data[[variable]])) %>%
+    summarise(mean_val = mean(.data[[variable]]), sd_val = sd(.data[[variable]]))
+  sprintf("prior(normal(%.2f, %.2f), class = '%s')", stats$mean_val, stats$sd_val, class)
+}
+
+prior_strings <- sapply(c("c_col", "n_air", "c_ap", "o_ap"), function(var) generate_prior(df_teo_filtered, var))
+cat(paste0(prior_strings, collapse = "\n"))
+```
+
+### Bayesian modeling framework
+
+Bayesian regression models were implemented using the **brms** package. Each isotopic system was modeled separately, with group membership included as a fixed effect. Posterior distributions were estimated using four Markov Chain Monte Carlo chains with 4000 iterations per chain (1000 warmup), providing 12,000 post-warmup posterior draws for inference.
+Model convergence was assessed using R̂ statistics and effective sample sizes for all parameters. All models showed satisfactory convergence (R̂ values approximately 1.00).
+
+
+---
+
+
+## Residential compound comparison (LV2 vs LV3)
+
+### Subset data
+```{r}
+df_lv_subset <- df_clean_isotopes %>%
+filter(frente %in% c("LV2", "LV3")) %>%
+mutate(frente = factor(frente))
+
+table(df_lv_subset$frente)
+```
+
+### Define priors
+```{r}
+common_priors <- set_prior("student_t(3, 0, 2.5)", class = "sigma")
+group_prior <- set_prior("normal(0, 2)", class = "b")
+```
+
+### Fit Bayesian model
+```{r}
+
+# d13C collagen
+model_c_col <- brm(
+  c_col ~ frente, 
+  data = df_lv_subset, 
+  prior = c(
+    set_prior("normal(-8.21, 0.95)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 123)
+
+# d15N
+model_n_air <- brm(
+  n_air ~ frente, 
+  data = df_lv_subset, 
+  prior = c(
+    set_prior("normal(9.22, 1.02)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 124)
+
+# d13C apatite
+model_c_ap <- brm(
+  c_ap ~ frente, 
+  data = df_lv_subset, 
+  prior = c(
+    set_prior("normal(-3.17, 0.69)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+   iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 125)
+
+# d18O apatite
+model_o_ap <- brm(
+  o_ap ~ frente, 
+  data = df_lv_subset, 
+  prior = c(
+    set_prior("normal(-8.39, 1.32)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 126)
+```
+
+
+### Posterior summaries
+```{r}
+# Tidy fixed effects
+summaries <- list(
+  tidy(model_c_col, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (collagen)"),
+  tidy(model_n_air, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ15N (collagen)"),
+  tidy(model_c_ap, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (apatite)"),
+  tidy(model_o_ap, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ18O (apatite)")
+)
+
+posterior_table <- bind_rows(summaries) %>%
+  select(model, term, estimate, std.error, conf.low, conf.high) %>%
+  rename(
+    Isotope_System = model,
+    Parameter = term,
+    Estimate = estimate,
+    Std_Error = std.error,
+    CI_2.5 = conf.low,
+    CI_97.5 = conf.high
+)
+
+print(posterior_table)
+```
+
+### Posterior probabilities: P(LV2 > LV3)
+```{r}
+# δ13C (collagen)
+post_c_col <- as_draws_df(model_c_col)
+mean(post_c_col$b_frenteLV3 < 0, na.rm = TRUE) # P(LV2 > LV3)
+mcmc_areas(model_c_col, pars = c("b_Intercept", "b_frenteLV3"))
+
+
+# δ15N
+post_n_air <- as_draws_df(model_n_air)
+mean(post_n_air$b_frenteLV3 < 0, na.rm = TRUE)
+mcmc_areas(model_n_air, pars = c("b_Intercept", "b_frenteLV3"))
+
+
+# δ13C (apatite)
+post_c_ap <- as_draws_df(model_c_ap)
+mean(post_c_ap$b_frenteLV3 < 0, na.rm = TRUE)
+mcmc_areas(model_c_ap, pars = c("b_Intercept", "b_frenteLV3"))
+
+
+# δ18O
+post_o_ap <- as_draws_df(model_o_ap)
+mean(post_o_ap$b_frenteLV3 < 0, na.rm = TRUE)
+mcmc_areas(model_o_ap, pars = c("b_Intercept", "b_frenteLV3"))
+```
+
+
+```{r}
+# Extract posterior samples
+post_lv_c_col <- as_draws_df(model_c_col)
+post_lv_n_air <- as_draws_df(model_n_air)
+post_lv_c_ap  <- as_draws_df(model_c_ap)
+post_lv_o_ap  <- as_draws_df(model_o_ap)
+
+# Calculate posterior probabilities
+prob_lv2_gt_lv3 <- tibble(
+  Isotope_System = c("δ13C (collagen)", "δ15N (collagen)", "δ13C (apatite)", "δ18O (apatite)"),
+  P_LV2_gt_LV3 = c(
+    mean(post_lv_c_col$b_frenteLV3 < 0, na.rm = TRUE),  # LV2 > LV3 for δ13C_collagen
+    mean(post_lv_n_air$b_frenteLV3 < 0, na.rm = TRUE),
+    mean(post_lv_c_ap$b_frenteLV3 < 0, na.rm = TRUE),
+    mean(post_lv_o_ap$b_frenteLV3 < 0, na.rm = TRUE)
+  )
+)
+
+print(prob_lv2_gt_lv3)
+```
+
+Models with heteroskedastic variance: sigma ~ frente
+
+```{r}
+# d13Ccol
+model_c_col_sd <- brm(
+  bf(c_col ~ frente, sigma ~ frente),
+  data = df_lv_subset,
+  prior = c(
+    set_prior("normal(-8.21, 0.95)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 123,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+# δ15N (collagen)
+model_n_air_sd <- brm(
+  bf(n_air ~ frente, sigma ~ frente),
+  data = df_lv_subset,
+  prior = c(
+    set_prior("normal(9.22, 1.02)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 123,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+# δ13C (apatite)
+model_c_ap_sd <- brm(
+  bf(c_ap ~ frente, sigma ~ frente),
+  data = df_lv_subset,
+  prior = c(
+    set_prior("normal(-3.17, 0.69)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 123,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+# δ18O (apatite)
+model_o_ap_sd <- brm(
+  bf(o_ap ~ frente, sigma ~ frente),
+  data = df_lv_subset,
+  prior = c(
+    set_prior("normal(-8.39, 1.32)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 123,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+```
+
+### Posterior variance estimates: P(LV2 more variable than LV3)
+
+```{r} 
+# Extract posterior probabilities that LV2 is more variable than LV3
+get_sigma_prob <- function(model) {
+  posterior <- as_draws_df(model)
+  mean(posterior$b_sigma_frenteLV3 < 0, na.rm = TRUE)  # P(LV2 > LV3)
+}
+
+get_sigma_stats <- function(model) {
+  posterior <- as_draws_df(model)
+  diff <- posterior$b_sigma_frenteLV3
+
+  tibble(
+    P_LV2_more_variable = mean(diff < 0, na.rm = TRUE),
+    Posterior_Mean = mean(diff, na.rm = TRUE),
+    Posterior_SD = sd(diff, na.rm = TRUE),
+    CI_2.5 = quantile(diff, 0.025, na.rm = TRUE),
+    CI_97.5 = quantile(diff, 0.975, na.rm = TRUE)
+  )
+}
+
+prob_variance_lv2_gt_lv3 <- tibble(
+  Isotope_System = c("δ13C (collagen)", "δ15N (collagen)", "δ13C (apatite)", "δ18O (apatite)"),
+  P_LV2_more_variable = c(
+    get_sigma_prob(model_c_col_sd),
+    get_sigma_prob(model_n_air_sd),
+    get_sigma_prob(model_c_ap_sd),
+    get_sigma_prob(model_o_ap_sd)
+  )
+)
+
+print(prob_variance_lv2_gt_lv3)
+```
+
+### Visualize data
+
+```{r}
+ggplot(df_lv_subset, aes(x = c_col, y = frente, fill = frente)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ13C (collagen) by Compound", x = "δ13C (‰)", y = "Compound") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_lv_subset, aes(x = n_air, y = frente, fill = frente)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ15N (collagen) by Compound", x = "δ15N (‰)", y = "Compound") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_lv_subset, aes(x = c_ap, y = frente, fill = frente)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ13C (apatite) by Compound", x = "δ13C (‰)", y = "Compound") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_lv_subset, aes(x = o_ap, y = frente, fill = frente)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ18O (apatite) by Compound", x = "δ18O (‰)", y = "Compound") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+---
+
+## Biological Sex Comparisons
+
+### Subset data
+```{r}
+df_sex_subset <- df_clean_isotopes %>%
+  filter(sex %in% c("M", "F")) %>%
+  mutate(sex = factor(sex, levels = c("F", "M")))
+
+table(df_sex_subset$sex)
+```
+
+### Fit Bayesian model
+```{r}
+
+# d13C collagen
+model_c_col_sex <- brm(
+  c_col ~ sex, 
+  data = df_sex_subset, 
+  prior = c(
+    set_prior("normal(-8.21, 0.95)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 131)
+
+# d15N
+model_n_air_sex <- brm(
+  n_air ~ sex, 
+  data = df_sex_subset, 
+  prior = c(
+    set_prior("normal(9.22, 1.02)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 132)
+
+# d13C apatite
+model_c_ap_sex <- brm(
+  c_ap ~ sex, 
+  data = df_sex_subset, 
+  prior = c(
+    set_prior("normal(-3.17, 0.69)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 133)
+
+# d18O apatite
+model_o_ap_sex <- brm(
+  o_ap ~ sex, 
+  data = df_sex_subset, 
+  prior = c(
+    set_prior("normal(-8.39, 1.32)", class = "Intercept"),
+    group_prior, 
+    common_priors), 
+iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 134)
+```
+
+### Posterior summaries
+
+```{r}
+# Tidy fixed effects
+summaries <- list(
+  tidy(model_c_col_sex, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (collagen)"),
+  tidy(model_n_air_sex, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ15N (collagen)"),
+  tidy(model_c_ap_sex, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (apatite)"),
+  tidy(model_o_ap_sex, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ18O (apatite)")
+)
+
+posterior_table_sex <- bind_rows(summaries) %>%
+  select(model, term, estimate, std.error, conf.low, conf.high) %>%
+  rename(
+    Isotope_System = model,
+    Parameter = term,
+    Estimate = estimate,
+    Std_Error = std.error,
+    CI_2.5 = conf.low,
+    CI_97.5 = conf.high
+)
+
+print(posterior_table_sex)
+```
+
+### Posterior Probabilities: P(M > F)
+
+```{r}
+post_c_col_sex <- as_draws_df(model_c_col_sex)
+post_n_air_sex <- as_draws_df(model_n_air_sex)
+post_c_ap_sex  <- as_draws_df(model_c_ap_sex)
+post_o_ap_sex  <- as_draws_df(model_o_ap_sex)
+
+post_sex_probs <- tibble(
+  Isotope_System = c("δ13C (collagen)", "δ15N (collagen)", "δ13C (apatite)", "δ18O (apatite)"),
+  P_M_gt_F = c(
+    mean(post_c_col_sex$b_sexM > 0, na.rm = TRUE),
+    mean(post_n_air_sex$b_sexM > 0, na.rm = TRUE),
+    mean(post_c_ap_sex$b_sexM > 0, na.rm = TRUE),
+    mean(post_o_ap_sex$b_sexM > 0, na.rm = TRUE)
+  )
+)
+
+print(post_sex_probs)
+```
+
+Dietary Variability: sigma ~ sex
+
+```{r}
+model_c_col_sd_sex <- brm(
+  bf(c_col ~ sex, sigma ~ sex),
+  data = df_sex_subset,
+  prior = c(
+    set_prior("normal(-8.21, 0.95)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000,
+  chains = 4, cores = 4, seed = 701,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+model_n_air_sd_sex <- brm(
+  bf(n_air ~ sex, sigma ~ sex),
+  data = df_sex_subset,
+  prior = c(
+    set_prior("normal(9.22, 1.02)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000,
+  chains = 4, cores = 4, seed = 702,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+model_c_ap_sd_sex <- brm(
+  bf(c_ap ~ sex, sigma ~ sex),
+  data = df_sex_subset,
+  prior = c(
+    set_prior("normal(-3.17, 0.69)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000,
+  chains = 4, cores = 4, seed = 703,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+model_o_ap_sd_sex <- brm(
+  bf(o_ap ~ sex, sigma ~ sex),
+  data = df_sex_subset,
+  prior = c(
+    set_prior("normal(-8.39, 1.32)", class = "Intercept"),
+    set_prior("normal(0, 2)", class = "b"),
+    set_prior("student_t(3, 0, 2.5)", class = "Intercept", dpar = "sigma"),
+    set_prior("normal(0, 1)", class = "b", dpar = "sigma")
+  ),
+  iter = 4000, warmup = 1000,
+  chains = 4, cores = 4, seed = 704,
+  control = list(adapt_delta = 0.95, max_treedepth = 12)
+)
+
+# Compare group variance: P(M > F)
+get_sigma_prob_sex <- function(model) {
+  posterior <- as_draws_df(model)
+  mean(posterior$b_sigma_sexM > 0, na.rm = TRUE)  # P(M more variable)
+}
+
+get_sigma_stats_sex <- function(model) {
+  posterior <- as_draws_df(model)
+  diff <- posterior$b_sigma_sexM
+  tibble(
+    P_M_more_variable = mean(diff > 0, na.rm = TRUE),
+    P_F_more_variable = mean(diff < 0, na.rm = TRUE),
+    Posterior_Mean = mean(diff, na.rm = TRUE),
+    Posterior_SD = sd(diff, na.rm = TRUE),
+    CI_2.5 = quantile(diff, 0.025, na.rm = TRUE),
+    CI_97.5 = quantile(diff, 0.975, na.rm = TRUE)
+  )
+}
+
+prob_variance_sex <- tibble(
+  Isotope_System = c("δ13C (collagen)", "δ15N (collagen)", "δ13C (apatite)", "δ18O (apatite)"),
+  P_Male_more_variable = c(
+    get_sigma_prob_sex(model_c_col_sd_sex),
+    get_sigma_prob_sex(model_n_air_sd_sex),
+    get_sigma_prob_sex(model_c_ap_sd_sex),
+    get_sigma_prob_sex(model_o_ap_sd_sex)
+  )
+)
+
+prob_variance_sex
+```
+
+### Visualize data
+
+```{r}
+ggplot(df_sex_subset, aes(x = c_col, y = sex, fill = sex)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ13C (collagen) by Sex", x = "δ13C (‰)", y = "Sex") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_sex_subset, aes(x = n_air, y = sex, fill = sex)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ15N (collagen) by Sex", x = "δ15N (‰)", y = "Sex") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_sex_subset, aes(x = c_ap, y = sex, fill = sex)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ13C (apatite) by Sex", x = "δ13C (‰)", y = "Sex") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_sex_subset, aes(x = o_ap, y = sex, fill = sex)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ18O (apatite) by Sex", x = "δ18O (‰)", y = "Sex") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+
+---
+
+## Geographic Origin (Local vs Nonlocal)
+Individuals were classified as local or nonlocal based on δ¹⁸O apatite values using a previously defined local isotopic range.
+
+## Subset data
+
+```{r}
+df_locality_subset <- df_clean_isotopes %>%
+  filter(!is.na(o_ap)) %>%
+  mutate(locality = case_when(
+    o_ap >= -9.7 & o_ap <= -5.7 ~ "Local",
+    TRUE ~ "Nonlocal"
+  )) %>%
+  mutate(locality = factor(locality, levels = c("Nonlocal", "Local")))
+
+table(df_locality_subset$locality)
+```
+
+### Fit Bayesian model
+
+```{r}
+# δ13C (collagen)
+model_c_col_loc <- brm(
+  c_col ~ locality,
+  data = df_locality_subset,
+  prior = c(
+    set_prior("normal(-8.21, 0.95)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 141
+)
+
+# δ15N (collagen)
+model_n_air_loc <- brm(
+  n_air ~ locality,
+  data = df_locality_subset,
+  prior = c(
+    set_prior("normal(9.22, 1.02)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 142
+)
+
+# δ13C (apatite)
+model_c_ap_loc <- brm(
+  c_ap ~ locality,
+  data = df_locality_subset,
+  prior = c(
+    set_prior("normal(-3.17, 0.69)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 143
+)
+
+# δ18O (apatite)
+model_o_ap_loc <- brm(
+  o_ap ~ locality,
+  data = df_locality_subset,
+  prior = c(
+    set_prior("normal(-8.39, 1.32)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 144
+)
+```
+
+
+### Posterior summaries
+
+```{r}
+summaries_loc <- list(
+  tidy(model_c_col_loc, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (collagen)"),
+  tidy(model_n_air_loc, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ15N (collagen)"),
+  tidy(model_c_ap_loc, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (apatite)"),
+  tidy(model_o_ap_loc, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ18O (apatite)")
+)
+
+posterior_table_loc <- bind_rows(summaries_loc) %>%
+  select(model, term, estimate, std.error, conf.low, conf.high) %>%
+  rename(
+    Isotope_System = model,
+    Parameter = term,
+    Estimate = estimate,
+    Std_Error = std.error,
+    CI_2.5 = conf.low,
+    CI_97.5 = conf.high
+  )
+
+print(posterior_table_loc)
+```
+
+### Posterior Probabilities: P(Local > Nonlocal)
+
+```{r}
+post_locality_probs <- tibble(
+  Isotope_System = c("δ13C (collagen)", "δ15N (collagen)", "δ13C (apatite)", "δ18O (apatite)"),
+  P_Local_gt_Nonlocal = c(
+    mean(as_draws_df(model_c_col_loc)$b_localityLocal > 0),
+    mean(as_draws_df(model_n_air_loc)$b_localityLocal > 0),
+    mean(as_draws_df(model_c_ap_loc)$b_localityLocal > 0),
+    mean(as_draws_df(model_o_ap_loc)$b_localityLocal > 0)
+  )
+)
+
+print(post_locality_probs)
+```
+
+Due to sample size of Nonlocal data, variance comparison for locality cannot be run.
+
+
+
+### Visualize data
+
+```{r}
+### Visualize data
+
+ggplot(df_locality_subset, aes(x = c_col, y = locality, fill = locality)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ13C (collagen) by Locality", x = "δ13C (‰)", y = "Locality") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_locality_subset, aes(x = n_air, y = locality, fill = locality)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ15N (collagen) by Locality", x = "δ15N (‰)", y = "Locality") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_locality_subset, aes(x = c_ap, y = locality, fill = locality)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ13C (apatite) by Locality", x = "δ13C (‰)", y = "Locality") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+ggplot(df_locality_subset, aes(x = o_ap, y = locality, fill = locality)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  labs(title = "δ18O (apatite) by Locality", x = "δ18O (‰)", y = "Locality") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+---
+
+## Diachronic comparisons (time periods)
+
+
+## Subset data
+
+```{r}
+df_time_subset <- df_clean_isotopes %>%
+  filter(time %in% c("Tlam", "Xol-Met", "Epi")) %>%
+  mutate(
+    time = recode(time, `Xol-Met` = "XolMet"),
+    time = factor(time, levels = c("Tlam", "XolMet", "Epi"))
+  ) %>%
+  droplevels()
+
+df_time_subset %>% count(time)
+
+```
+
+### Fit Bayesian model
+```{r}
+# d13C collagen
+model_c_col_time <- brm(
+  c_col ~ time,
+  data = df_time_subset,
+  prior = c(
+    set_prior("normal(-8.21, 0.95)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 161,
+  control = list(adapt_delta = 0.95)
+)
+
+# d15N
+model_n_air_time <- brm(
+  n_air ~ time,
+  data = df_time_subset,
+  prior = c(
+    set_prior("normal(9.22, 1.02)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 162,
+  control = list(adapt_delta = 0.95)
+)
+
+# d13C apatite
+model_c_ap_time <- brm(
+  c_ap ~ time,
+  data = df_time_subset,
+  prior = c(
+    set_prior("normal(-3.17, 0.69)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 163,
+  control = list(adapt_delta = 0.95)
+)
+
+# d18O apatite
+model_o_ap_time <- brm(
+  o_ap ~ time,
+  data = df_time_subset,
+  prior = c(
+    set_prior("normal(-8.39, 1.32)", class = "Intercept"),
+    group_prior,
+    common_priors
+  ),
+  iter = 4000, warmup = 1000, chains = 4, cores = 4, seed = 164,
+  control = list(adapt_delta = 0.95)
+)
+```
+
+### Posterior summaries
+
+```{r}
+summaries_time <- list(
+  tidy(model_c_col_time, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (collagen)"),
+  tidy(model_n_air_time, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ15N (collagen)"),
+  tidy(model_c_ap_time, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ13C (apatite)"),
+  tidy(model_o_ap_time, effects = "fixed", conf.int = TRUE) %>% mutate(model = "δ18O (apatite)")
+)
+
+posterior_table_time <- bind_rows(summaries_time) %>%
+  select(model, term, estimate, std.error, conf.low, conf.high) %>%
+  rename(
+    Isotope_System = model,
+    Parameter = term,
+    Estimate = estimate,
+    Std_Error = std.error,
+    CI_2.5 = conf.low,
+    CI_97.5 = conf.high
+  )
+
+print(posterior_table_time)
+```
+
+### Posterior Probabilities
+
+```{r}
+### Posterior Probabilities
+
+# --- δ13C (collagen) ---
+post_c_col_time <- as_draws_df(model_c_col_time)
+p_c_col_xolmet_gt_tlam <- mean(post_c_col_time$b_timeXolMet > 0, na.rm = TRUE)
+p_c_col_epi_gt_tlam    <- mean(post_c_col_time$b_timeEpi > 0, na.rm = TRUE)
+p_c_col_epi_gt_xolmet  <- mean(post_c_col_time$b_timeEpi > post_c_col_time$b_timeXolMet, na.rm = TRUE)
+
+# --- δ15N (collagen) ---
+post_n_air_time <- as_draws_df(model_n_air_time)
+p_n_air_xolmet_gt_tlam <- mean(post_n_air_time$b_timeXolMet > 0, na.rm = TRUE)
+p_n_air_epi_gt_tlam    <- mean(post_n_air_time$b_timeEpi > 0, na.rm = TRUE)
+p_n_air_epi_gt_xolmet  <- mean(post_n_air_time$b_timeEpi > post_n_air_time$b_timeXolMet, na.rm = TRUE)
+
+# --- δ13C (apatite) ---
+post_c_ap_time <- as_draws_df(model_c_ap_time)
+p_c_ap_xolmet_gt_tlam <- mean(post_c_ap_time$b_timeXolMet > 0, na.rm = TRUE)
+p_c_ap_epi_gt_tlam    <- mean(post_c_ap_time$b_timeEpi > 0, na.rm = TRUE)
+p_c_ap_epi_gt_xolmet  <- mean(post_c_ap_time$b_timeEpi > post_c_ap_time$b_timeXolMet, na.rm = TRUE)
+
+# --- δ18O (apatite) ---
+post_o_ap_time <- as_draws_df(model_o_ap_time)
+p_o_ap_xolmet_gt_tlam <- mean(post_o_ap_time$b_timeXolMet > 0, na.rm = TRUE)
+p_o_ap_epi_gt_tlam    <- mean(post_o_ap_time$b_timeEpi > 0, na.rm = TRUE)
+p_o_ap_epi_gt_xolmet  <- mean(post_o_ap_time$b_timeEpi > post_o_ap_time$b_timeXolMet, na.rm = TRUE)
+
+# Combine into summary table
+time_probs_summary <- tibble(
+  Isotope_System = rep(c("δ13C (collagen)", "δ15N (collagen)", "δ13C (apatite)", "δ18O (apatite)"), each = 3),
+  Comparison = rep(c("XolMet > Tlam", "Epi > Tlam", "Epi > XolMet"), 4),
+  Probability = c(
+    p_c_col_xolmet_gt_tlam, p_c_col_epi_gt_tlam, p_c_col_epi_gt_xolmet,
+    p_n_air_xolmet_gt_tlam, p_n_air_epi_gt_tlam, p_n_air_epi_gt_xolmet,
+    p_c_ap_xolmet_gt_tlam,  p_c_ap_epi_gt_tlam,  p_c_ap_epi_gt_xolmet,
+    p_o_ap_xolmet_gt_tlam,  p_o_ap_epi_gt_tlam,  p_o_ap_epi_gt_xolmet
+  )
+)
+
+print(time_probs_summary)
+```
+
+Variance models for time periods were explored but not reported due to small sample size in the Epi group, which produced unstable posterior estimates for group-specific standard deviations.
+
+
+### Visualize Data
+```{r}
+# δ13C (collagen)
+ggplot(df_time_subset, aes(x = c_col, y = time, fill = time)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  scale_fill_manual(values = c("Tlam" = "#FFB347",
+                               "XolMet" = "#87CEFA",
+                               "Epi" = "#B0E57C")) +
+  labs(title = "δ13C (collagen) by Time Period",
+       x = "δ13C (‰)",
+       y = "Time Period") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# δ15N (collagen)
+ggplot(df_time_subset, aes(x = n_air, y = time, fill = time)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  scale_fill_manual(values = c("Tlam" = "#FFB347",
+                               "XolMet" = "#87CEFA",
+                               "Epi" = "#B0E57C")) +
+  labs(title = "δ15N (collagen) by Time Period",
+       x = "δ15N (‰)",
+       y = "Time Period") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# δ13C (apatite)
+ggplot(df_time_subset, aes(x = c_ap, y = time, fill = time)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  scale_fill_manual(values = c("Tlam" = "#FFB347",
+                               "XolMet" = "#87CEFA",
+                               "Epi" = "#B0E57C")) +
+  labs(title = "δ13C (apatite) by Time Period",
+       x = "δ13C (‰)",
+       y = "Time Period") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# δ18O (apatite)
+ggplot(df_time_subset, aes(x = o_ap, y = time, fill = time)) +
+  geom_density_ridges(alpha = 0.6, scale = 1, na.rm = TRUE) +
+  scale_fill_manual(values = c("Tlam" = "#FFB347",
+                               "XolMet" = "#87CEFA",
+                               "Epi" = "#B0E57C")) +
+  labs(title = "δ18O (apatite) by Time Period",
+       x = "δ18O (‰)",
+       y = "Time Period") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+---
+
+## Visualization of posterior distributions
+
+**Posterior Means**
+
+**Compound**
+
+```{r}
+# δ13Ccol
+means_c_col <- model_c_col %>%
+  spread_draws(b_Intercept, b_frenteLV3) %>%
+  mutate(
+    LV2 = b_Intercept,
+    LV3 = b_Intercept + b_frenteLV3
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13Ccol", Type = "Mean")
+
+# δ15N
+means_n_air <- model_n_air %>%
+  spread_draws(b_Intercept, b_frenteLV3) %>%
+  mutate(
+    LV2 = b_Intercept,
+    LV3 = b_Intercept + b_frenteLV3
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ15N", Type = "Mean")
+
+# δ13Cap
+means_c_ap <- model_c_ap %>%
+  spread_draws(b_Intercept, b_frenteLV3) %>%
+  mutate(
+    LV2 = b_Intercept,
+    LV3 = b_Intercept + b_frenteLV3
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13Cap", Type = "Mean")
+
+# δ18O
+means_o_ap <- model_o_ap %>%
+  spread_draws(b_Intercept, b_frenteLV3) %>%
+  mutate(
+    LV2 = b_Intercept,
+    LV3 = b_Intercept + b_frenteLV3
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ18O", Type = "Mean")
+
+# Combine all means
+all_means <- bind_rows(means_c_col, means_n_air, means_c_ap, means_o_ap)
+
+all_means <- all_means %>%
+  mutate(Isotope = case_when(
+    Isotope == "δ13Ccol" ~ "δ13C (collagen)",
+    Isotope == "δ13Cap"  ~ "δ13C (apatite)",
+    Isotope == "δ15N"    ~ "δ15N (collagen)",
+    Isotope == "δ18O"    ~ "δ18O (apatite)",
+    TRUE ~ Isotope
+  )) %>%
+  mutate(Isotope = factor(Isotope, levels = c(
+    "δ13C (collagen)", "δ13C (apatite)", "δ15N (collagen)", "δ18O (apatite)"
+  )))
+
+# Posterior mean lines for each group in each panel
+mean_lines <- all_means %>%
+  group_by(Isotope, group) %>%
+  summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop")
+
+# Panel labels with posterior probabilities
+prob_labels <- tibble(
+  Isotope = factor(c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  ), levels = c(
+    "δ13C (collagen)", "δ13C (apatite)", "δ15N (collagen)", "δ18O (apatite)"
+  )),
+  label = c(
+    "P(LV2 > LV3) = 0.74",
+    "P(LV2 > LV3) = 0.50",
+    "P(LV2 > LV3) = 0.16",
+    "P(LV2 > LV3) = 0.58"
+  )
+)
+
+# Get annotation positions within each facet
+label_positions <- all_means %>%
+  group_by(Isotope) %>%
+  summarise(
+    x = quantile(value, 0.98, na.rm = TRUE),
+    y = Inf,
+    .groups = "drop"
+  ) %>%
+  left_join(prob_labels, by = "Isotope")
+
+# Plot
+p_means <- ggplot(all_means, aes(x = value, fill = group)) +
+  geom_density(alpha = 0.6) +
+  geom_vline(
+    data = mean_lines,
+    aes(xintercept = mean_value, color = group),
+    linetype = "dashed",
+    linewidth = 0.8,
+    show.legend = FALSE
+  ) +
+  geom_text(
+    data = label_positions,
+    aes(x = x, y = y, label = label),
+    inherit.aes = FALSE,
+    hjust = 1.05,
+    vjust = 1.5,
+    size = 3.2
+  ) +
+  facet_wrap(~ Isotope, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("LV2" = "darkorange", "LV3" = "steelblue")) +
+  scale_color_manual(values = c("LV2" = "darkorange", "LV3" = "steelblue")) +
+  labs(
+    x = "Posterior Mean",
+    y = "Density",
+    fill = "Compound"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "right",
+    text = element_text(size = 11)
+  )
+
+print(p_means)
+```
+
+
+**Sex**
+
+```{r}
+
+# δ13C collagen
+means_c_col_sex <- model_c_col_sex %>%
+  spread_draws(b_Intercept, b_sexM) %>%
+  mutate(
+    F = b_Intercept,
+    M = b_Intercept + b_sexM
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13Ccol")
+
+# δ15N collagen
+means_n_air_sex <- model_n_air_sex %>%
+  spread_draws(b_Intercept, b_sexM) %>%
+  mutate(
+    F = b_Intercept,
+    M = b_Intercept + b_sexM
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ15N")
+
+# δ13C apatite
+means_c_ap_sex <- model_c_ap_sex %>%
+  spread_draws(b_Intercept, b_sexM) %>%
+  mutate(
+    F = b_Intercept,
+    M = b_Intercept + b_sexM
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13Cap")
+
+# δ18O apatite
+means_o_ap_sex <- model_o_ap_sex %>%
+  spread_draws(b_Intercept, b_sexM) %>%
+  mutate(
+    F = b_Intercept,
+    M = b_Intercept + b_sexM
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ18O")
+
+# Combine
+all_means_sex <- bind_rows(
+  means_c_col_sex,
+  means_n_air_sex,
+  means_c_ap_sex,
+  means_o_ap_sex
+)
+
+all_means_sex <- all_means_sex %>%
+  mutate(Isotope = case_when(
+    Isotope == "δ13Ccol" ~ "δ13C (collagen)",
+    Isotope == "δ13Cap"  ~ "δ13C (apatite)",
+    Isotope == "δ15N"    ~ "δ15N (collagen)",
+    Isotope == "δ18O"    ~ "δ18O (apatite)",
+    TRUE ~ Isotope
+  )) %>%
+  mutate(Isotope = factor(Isotope, levels = c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  )))
+
+# Posterior mean lines for each sex in each panel
+sex_mean_lines <- all_means_sex %>%
+  group_by(Isotope, group) %>%
+  summarise(line_value = mean(value, na.rm = TRUE), .groups = "drop")
+
+# Posterior probability labels
+prob_labels_sex <- tibble(
+  Isotope = factor(c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  ), levels = levels(all_means_sex$Isotope)),
+  label = c(
+    "P(M > F) = 0.95",
+    "P(M > F) = 0.68",
+    "P(M > F) = 0.49",
+    "P(M > F) = 0.78"
+  )
+)
+
+# Plot
+p_means_sex <- ggplot(all_means_sex, aes(x = value, fill = group)) +
+  geom_density(alpha = 0.6) +
+  geom_vline(
+    data = sex_mean_lines,
+    aes(xintercept = line_value, color = group),
+    linetype = "dashed",
+    linewidth = 0.8,
+    show.legend = FALSE
+  ) +
+  geom_text(
+    data = prob_labels_sex,
+    aes(label = label),
+    x = Inf,
+    y = Inf,
+    inherit.aes = FALSE,
+    hjust = 1.1,
+    vjust = 1.5,
+    size = 4
+  ) +
+  facet_wrap(~ Isotope, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("F" = "firebrick2", "M" = "deepskyblue")) +
+  scale_color_manual(values = c("F" = "firebrick2", "M" = "deepskyblue")) +
+  labs(
+    x = "Posterior Mean",
+    y = "Density",
+    fill = "Sex"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "right",
+    text = element_text(size = 11)
+  )
+
+print(p_means_sex)
+```
+
+
+**Locality**
+
+```{r}
+# δ13C collagen
+means_c_col <- model_c_col_loc %>%
+  spread_draws(b_Intercept, b_localityLocal) %>%
+  mutate(
+    Nonlocal = b_Intercept,
+    Local = b_Intercept + b_localityLocal
+  ) %>%
+  select(.draw, Local, Nonlocal) %>%
+  pivot_longer(cols = c(Local, Nonlocal), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13Ccol")
+
+# δ15N collagen
+means_n_air <- model_n_air_loc %>%
+  spread_draws(b_Intercept, b_localityLocal) %>%
+  mutate(
+    Nonlocal = b_Intercept,
+    Local = b_Intercept + b_localityLocal
+  ) %>%
+  select(.draw, Local, Nonlocal) %>%
+  pivot_longer(cols = c(Local, Nonlocal), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ15N")
+
+# δ13C apatite
+means_c_ap <- model_c_ap_loc %>%
+  spread_draws(b_Intercept, b_localityLocal) %>%
+  mutate(
+    Nonlocal = b_Intercept,
+    Local = b_Intercept + b_localityLocal
+  ) %>%
+  select(.draw, Local, Nonlocal) %>%
+  pivot_longer(cols = c(Local, Nonlocal), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13Cap")
+
+# δ18O apatite
+means_o_ap <- model_o_ap_loc %>%
+  spread_draws(b_Intercept, b_localityLocal) %>%
+  mutate(
+    Nonlocal = b_Intercept,
+    Local = b_Intercept + b_localityLocal
+  ) %>%
+  select(.draw, Local, Nonlocal) %>%
+  pivot_longer(cols = c(Local, Nonlocal), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ18O")
+
+# Combine
+all_means_loc <- bind_rows(means_c_col, means_n_air, means_c_ap, means_o_ap)
+
+all_means_loc <- all_means_loc %>%
+  mutate(Isotope = case_when(
+    Isotope == "δ13Ccol" ~ "δ13C (collagen)",
+    Isotope == "δ13Cap"  ~ "δ13C (apatite)",
+    Isotope == "δ15N"    ~ "δ15N (collagen)",
+    Isotope == "δ18O"    ~ "δ18O (apatite)",
+    TRUE ~ Isotope
+  )) %>%
+  mutate(Isotope = factor(Isotope, levels = c(
+    "δ13C (collagen)", "δ13C (apatite)", "δ15N (collagen)", "δ18O (apatite)"
+  )))
+
+# Posterior mean lines for each locality group
+loc_mean_lines <- all_means_loc %>%
+  group_by(Isotope, group) %>%
+  summarise(line_value = mean(value, na.rm = TRUE), .groups = "drop")
+
+# Posterior probability labels
+prob_labels_loc <- tibble(
+  Isotope = factor(c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  ), levels = levels(all_means_loc$Isotope)),
+  label = c(
+    "P(Local > Nonlocal) = 0.93",
+    "P(Local > Nonlocal) = 0.99",
+    "P(Local > Nonlocal) = 0.02",
+    "P(Local > Nonlocal) = 1.00"
+  )
+)
+
+# Plot
+p_means_loc <- ggplot(all_means_loc, aes(x = value, fill = group)) +
+  geom_density(alpha = 0.6) +
+  geom_vline(
+    data = loc_mean_lines,
+    aes(xintercept = line_value, color = group),
+    linetype = "dashed",
+    linewidth = 0.8,
+    show.legend = FALSE
+  ) +
+  geom_text(
+    data = prob_labels_loc,
+    aes(label = label),
+    x = Inf,
+    y = Inf,
+    inherit.aes = FALSE,
+    hjust = 1.1,
+    vjust = 1.5,
+    size = 4
+  ) +
+  facet_wrap(~ Isotope, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("Local" = "springgreen2", "Nonlocal" = "purple3")) +
+  scale_color_manual(values = c("Local" = "springgreen2", "Nonlocal" = "purple3")) +
+  labs(
+    x = "Posterior Mean",
+    y = "Density",
+    fill = "Locality"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "right",
+    text = element_text(size = 11)
+  )
+
+print(p_means_loc)
+```
+
+**Time Period**
+
+```{r}
+# Extract posterior draws directly
+extract_time_draws <- function(model, iso_label) {
+  model %>%
+    spread_draws(b_Intercept, b_timeXolMet, b_timeEpi) %>%
+    mutate(
+      Tlam = b_Intercept,
+      `Xol-Met` = b_Intercept + b_timeXolMet,
+      Epi = b_Intercept + b_timeEpi,
+      Isotope = iso_label
+    ) %>%
+    select(.draw, Tlam, `Xol-Met`, Epi, Isotope) %>%
+    pivot_longer(cols = c(Tlam, `Xol-Met`, Epi), names_to = "Time", values_to = "value")
+}
+
+# Extract draws
+draws_c_col <- extract_time_draws(model_c_col_time, "δ13Ccol")
+draws_n_air <- extract_time_draws(model_n_air_time, "δ15N")
+draws_c_ap  <- extract_time_draws(model_c_ap_time, "δ13Cap")
+draws_o_ap  <- extract_time_draws(model_o_ap_time, "δ18O")
+
+# Combine into one dataframe
+all_time_draws <- bind_rows(draws_c_col, draws_n_air, draws_c_ap, draws_o_ap)
+
+all_time_draws <- all_time_draws %>%
+  mutate(Isotope = case_when(
+    Isotope == "δ13Ccol" ~ "δ13C (collagen)",
+    Isotope == "δ13Cap"  ~ "δ13C (apatite)",
+    Isotope == "δ15N"    ~ "δ15N (collagen)",
+    Isotope == "δ18O"    ~ "δ18O (apatite)",
+    TRUE ~ Isotope
+  )) %>%
+  mutate(Isotope = factor(Isotope, levels = c(
+    "δ13C (collagen)", "δ13C (apatite)", "δ15N (collagen)", "δ18O (apatite)"
+  )))
+
+# Posterior mean lines for each time period
+time_mean_lines <- all_time_draws %>%
+  group_by(Isotope, Time) %>%
+  summarise(line_value = mean(value, na.rm = TRUE), .groups = "drop")
+
+# Probability labels for each facet
+prob_labels_time <- tibble(
+  Isotope = factor(c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  ), levels = levels(all_time_draws$Isotope)),
+  label = c(
+    "P(Epi > Tlam) = 0.97",
+    "P(Epi > Tlam) = 0.96",
+    "P(Epi > Tlam) = 1.00",
+    "P(Tlam > Epi) = 0.96"
+  )
+)
+
+# Plot
+p_time_means <- ggplot(all_time_draws, aes(x = value, fill = Time)) +
+  geom_density(alpha = 0.6) +
+  geom_vline(
+    data = time_mean_lines,
+    aes(xintercept = line_value, color = Time),
+    linetype = "dashed",
+    linewidth = 0.8,
+    show.legend = FALSE
+  ) +
+  geom_text(
+    data = prob_labels_time,
+    aes(label = label),
+    x = Inf,
+    y = Inf,
+    inherit.aes = FALSE,
+    hjust = 1.1,
+    vjust = 1.5,
+    size = 3.5
+  ) +
+  facet_wrap(~ Isotope, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("Tlam" = "#FFB347", "Xol-Met" = "#87CEFA", "Epi" = "#B0E57C")) +
+  scale_color_manual(values = c("Tlam" = "#FFB347", "Xol-Met" = "#87CEFA", "Epi" = "#B0E57C")) +
+  labs(
+    x = "Posterior Mean",
+    y = "Density",
+    fill = "Time Period"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "right",
+    text = element_text(size = 11)
+  )
+
+print(p_time_means)
+
+```
+
+
+**Posterior SD**
+
+**Compound**
+
+``` {r}
+# δ13C (collagen)
+sd_c_col <- model_c_col_sd %>%
+  spread_draws(b_sigma_Intercept, b_sigma_frenteLV3) %>%
+  mutate(
+    LV2 = exp(b_sigma_Intercept),
+    LV3 = exp(b_sigma_Intercept + b_sigma_frenteLV3)
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13C (collagen)")
+
+# δ13C (apatite)
+sd_c_ap <- model_c_ap_sd %>%
+  spread_draws(b_sigma_Intercept, b_sigma_frenteLV3) %>%
+  mutate(
+    LV2 = exp(b_sigma_Intercept),
+    LV3 = exp(b_sigma_Intercept + b_sigma_frenteLV3)
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13C (apatite)")
+
+# δ15N (collagen)
+sd_n_air <- model_n_air_sd %>%
+  spread_draws(b_sigma_Intercept, b_sigma_frenteLV3) %>%
+  mutate(
+    LV2 = exp(b_sigma_Intercept),
+    LV3 = exp(b_sigma_Intercept + b_sigma_frenteLV3)
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ15N (collagen)")
+
+# δ18O (apatite)
+sd_o_ap <- model_o_ap_sd %>%
+  spread_draws(b_sigma_Intercept, b_sigma_frenteLV3) %>%
+  mutate(
+    LV2 = exp(b_sigma_Intercept),
+    LV3 = exp(b_sigma_Intercept + b_sigma_frenteLV3)
+  ) %>%
+  select(.draw, LV2, LV3) %>%
+  pivot_longer(cols = c(LV2, LV3), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ18O (apatite)")
+
+# Combine all isotopic SDs
+all_sds <- bind_rows(sd_c_col, sd_c_ap, sd_n_air, sd_o_ap)
+
+# Order facets
+all_sds <- all_sds %>%
+  mutate(Isotope = factor(Isotope, levels = c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  )))
+
+# Posterior mean SD values for dashed lines
+sd_lines <- all_sds %>%
+  group_by(Isotope, group) %>%
+  summarise(line_value = mean(value, na.rm = TRUE), .groups = "drop")
+
+# Posterior probability labels
+prob_labels_sd <- tibble(
+  Isotope = factor(c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  ), levels = levels(all_sds$Isotope)),
+  label = c(
+    "P(LV2 > LV3) = 0.49",
+    "P(LV2 > LV3) = 0.88",
+    "P(LV2 > LV3) = 0.96",
+    "P(LV2 > LV3) = 0.37"
+  )
+)
+
+# Plot
+p_sds <- ggplot(all_sds, aes(x = value, fill = group)) +
+  geom_density(alpha = 0.6) +
+  geom_vline(
+    data = sd_lines,
+    aes(xintercept = line_value, color = group),
+    linetype = "dashed",
+    linewidth = 0.8,
+    show.legend = FALSE
+  ) +
+  geom_text(
+    data = prob_labels_sd,
+    aes(label = label),
+    x = Inf,
+    y = Inf,
+    inherit.aes = FALSE,
+    hjust = 1.1,
+    vjust = 1.5,
+    size = 4
+  ) +
+  facet_wrap(~ Isotope, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("LV2" = "darkorange", "LV3" = "steelblue")) +
+  scale_color_manual(values = c("LV2" = "darkorange", "LV3" = "steelblue")) +
+  labs(
+    x = "Posterior SD (σ)",
+    y = "Density",
+    fill = "Compound"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "right",
+    text = element_text(size = 11)
+  )
+
+print(p_sds)
+```
+
+**Sex**
+
+```{r}
+# δ13C (collagen)
+sd_c_col_sex <- model_c_col_sd_sex %>%
+  spread_draws(b_sigma_Intercept, b_sigma_sexM) %>%
+  mutate(
+    F = exp(b_sigma_Intercept),
+    M = exp(b_sigma_Intercept + b_sigma_sexM)
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13C (collagen)")
+
+# δ13C (apatite)
+sd_c_ap_sex <- model_c_ap_sd_sex %>%
+  spread_draws(b_sigma_Intercept, b_sigma_sexM) %>%
+  mutate(
+    F = exp(b_sigma_Intercept),
+    M = exp(b_sigma_Intercept + b_sigma_sexM)
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ13C (apatite)")
+
+# δ15N (collagen)
+sd_n_air_sex <- model_n_air_sd_sex %>%
+  spread_draws(b_sigma_Intercept, b_sigma_sexM) %>%
+  mutate(
+    F = exp(b_sigma_Intercept),
+    M = exp(b_sigma_Intercept + b_sigma_sexM)
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ15N (collagen)")
+
+# δ18O (apatite)
+sd_o_ap_sex <- model_o_ap_sd_sex %>%
+  spread_draws(b_sigma_Intercept, b_sigma_sexM) %>%
+  mutate(
+    F = exp(b_sigma_Intercept),
+    M = exp(b_sigma_Intercept + b_sigma_sexM)
+  ) %>%
+  select(.draw, F, M) %>%
+  pivot_longer(cols = c(F, M), names_to = "group", values_to = "value") %>%
+  mutate(Isotope = "δ18O (apatite)")
+
+# Combine all sex SDs
+all_sds_sex <- bind_rows(
+  sd_c_col_sex,
+  sd_c_ap_sex,
+  sd_n_air_sex,
+  sd_o_ap_sex
+)
+
+# Set correct facet order
+all_sds_sex <- all_sds_sex %>%
+  mutate(Isotope = factor(Isotope, levels = c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  )))
+
+# Posterior mean SD lines for each sex in each panel
+sex_sd_lines <- all_sds_sex %>%
+  group_by(Isotope, group) %>%
+  summarise(line_value = mean(value, na.rm = TRUE), .groups = "drop")
+
+# Posterior probability labels
+prob_labels_sd_sex <- tibble(
+  Isotope = factor(c(
+    "δ13C (collagen)",
+    "δ13C (apatite)",
+    "δ15N (collagen)",
+    "δ18O (apatite)"
+  ), levels = levels(all_sds_sex$Isotope)),
+  label = c(
+    "P(M > F) = 0.02",
+    "P(M > F) = 0.02",
+    "P(M > F) = 0.86",
+    "P(M > F) = 0.32"
+  )
+)
+
+# Plot
+p_sds_sex <- ggplot(all_sds_sex, aes(x = value, fill = group)) +
+  geom_density(alpha = 0.6) +
+  geom_vline(
+    data = sex_sd_lines,
+    aes(xintercept = line_value, color = group),
+    linetype = "dashed",
+    linewidth = 0.8,
+    show.legend = FALSE
+  ) +
+  geom_text(
+    data = prob_labels_sd_sex,
+    aes(label = label),
+    x = Inf,
+    y = Inf,
+    inherit.aes = FALSE,
+    hjust = 1.1,
+    vjust = 1.5,
+    size = 4
+  ) +
+  facet_wrap(~ Isotope, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("F" = "firebrick2", "M" = "deepskyblue")) +
+  scale_color_manual(values = c("F" = "firebrick2", "M" = "deepskyblue")) +
+  labs(
+    x = "Posterior SD (σ)",
+    y = "Density",
+    fill = "Sex"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "right",
+    text = element_text(size = 11)
+  )
+
+print(p_sds_sex)
+```
